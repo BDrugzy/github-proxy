@@ -3,8 +3,18 @@ const fetch = require('node-fetch');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
+
+// Настройки CORS - разрешаем все запросы
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type']
+}));
+
 app.use(express.json());
+
+// Обработка preflight запросов
+app.options('*', cors());
 
 app.get('/api/issues', async (req, res) => {
     const { repo, token } = req.query;

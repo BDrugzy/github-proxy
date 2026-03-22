@@ -3,25 +3,18 @@ const fetch = require('node-fetch');
 const cors = require('cors');
 
 const app = express();
-
-// Настройки CORS - разрешаем все запросы
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type']
-}));
-
+app.use(cors());
 app.use(express.json());
-
-// Обработка preflight запросов
-app.options('*', cors());
 
 app.get('/api/issues', async (req, res) => {
     const { repo, token } = req.query;
     
     try {
         const response = await fetch(`https://api.github.com/repos/${repo}/issues?labels=user&state=all`, {
-            headers: { 'Authorization': `token ${token}` }
+            headers: { 
+                'Authorization': `token ${token}`,
+                'User-Agent': 'Render-Proxy'
+            }
         });
         const data = await response.json();
         res.json(data);
@@ -38,12 +31,13 @@ app.post('/api/issues', async (req, res) => {
             method: 'POST',
             headers: {
                 'Authorization': `token ${token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'User-Agent': 'Render-Proxy'
             },
             body: JSON.stringify({ title, body, labels: ['user'] })
         });
         const data = await response.json();
-        res.json(data);
+        res.status(response.status).json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
